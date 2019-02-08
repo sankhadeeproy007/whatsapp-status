@@ -46,6 +46,10 @@ export default class App extends React.Component {
         <View style={styles.header}>
           <Text style={styles.headerText}>Status</Text>
         </View>
+        {/* Please use Flatlist here.
+          ScrollView because too lazy.
+          And pardon the key.
+        */}
         <ScrollView>
           {data.map(profile => (
             <StatusComponent {...{ profile }} key={profile.name} />

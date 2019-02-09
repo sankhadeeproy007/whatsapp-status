@@ -8,13 +8,27 @@ import {
 } from 'react-native';
 
 export default class StatusComponent extends Component {
+  status = React.createRef();
+
+  measure = () =>
+    new Promise(resolve =>
+      this.status.current.measureInWindow((x, y, w, h) =>
+        resolve({
+          x,
+          y,
+          w,
+          h
+        })
+      )
+    );
+
   render() {
     const { name, time, image } = this.props.profile;
     return (
-      <TouchableWithoutFeedback>
+      <TouchableWithoutFeedback onPress={this.props.onPress}>
         <View style={styles.statusLine}>
           <View style={styles.imageRing}>
-            <Image source={image} style={styles.image} />
+            <Image ref={this.status} source={image} style={styles.image} />
           </View>
           <View style={styles.statusDesc}>
             <Text style={styles.statusName}>{name}</Text>

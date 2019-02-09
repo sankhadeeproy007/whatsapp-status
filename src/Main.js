@@ -1,6 +1,17 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Dimensions,
+  ActivityIndicator
+} from 'react-native';
+import { Asset } from 'expo';
+const { width, height } = Dimensions.get('window');
+
 import StatusComponent from './StatusComponent';
+import Status from './Status';
 
 const data = [
   {
@@ -38,7 +49,26 @@ const data = [
 export default class App extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      selectedStatus: null,
+      ready: false,
+      position: null
+    };
+    this.status = data.map(() => React.createRef());
   }
+
+  async componentDidMount() {
+    await Promise.all(data.map(data => Asset.loadAsync(data.image)));
+    this.setState({ ready: true });
+  }
+
+  setStatus = async (profile, index) => {
+    const position = await this.status[index].current.measure();
+    this.setState({
+      selectedStatus: profile,
+      position
+    });
+  };
 
   render() {
     return (
@@ -50,11 +80,28 @@ export default class App extends React.Component {
           ScrollView because too lazy.
           And pardon the key.
         */}
-        <ScrollView>
-          {data.map(profile => (
-            <StatusComponent {...{ profile }} key={profile.name} />
-          ))}
-        </ScrollView>
+        {this.state.ready ? (
+          <ScrollView>
+            {data.map((profile, index) => (
+              <StatusComponent
+                {...{ profile }}
+                ref={this.status[index]}
+                onPress={() => this.setStatus(profile, index)}
+                key={profile.name}
+              />
+            ))}
+          </ScrollView>
+        ) : (
+          <ActivityIndicator />
+        )}
+        {this.state.selectedStatus && (
+          <Status
+            status={this.state.selectedStatus}
+            position={this.state.position}
+            windowWidth={width}
+            windowHeight={height}
+          />
+        )}
       </View>
     );
   }
